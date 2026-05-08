@@ -1,0 +1,1095 @@
+---
+title: "Seurat project"
+output: word_document
+---
+
+
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+install.packages("BiocManager")
+library("BiocManager")
+BiocManager::install("celldex")
+install.packages("devtools")
+library("celldex")
+library("devtools")
+install.packages("remotes")
+library("remotes")
+install.packages("rtools")
+Sys.which("make")
+install.packages("ggrepel")
+library("ggrepel")
+remotes::install_version("SeuratObject", "4.1.4", repos = c("https://satijalab.r-universe.dev", getOption("repos")))
+remotes::install_version("Seurat", "4.4.0", repos = c("https://satijalab.r-universe.dev", getOption("repos")))
+install.packages("dplyr")
+install.packages("patchwork")
+BiocManager::install("harmony")
+BiocManager::install("SingleR")
+BiocManager::install("SingleCellExperiment")
+install.packages("SignacX")
+BiocManager::install('EnhancedVolcano')
+BiocManager::install("clusterProfiler")
+BiocManager::install("org.Hs.eg.db")
+BiocManager::install("edgeR")
+devtools::install_github("jokergoo/ComplexHeatmap")
+library("ComplexHeatmap")
+library("circlize")
+install.packages("Matrix")
+library("Matrix")
+set.seed(42)
+```
+
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+library("BiocManager")
+library("celldex")
+library("devtools")
+library("remotes")
+library("ggrepel")
+library("SeuratObject")
+library("Seurat")
+library("dplyr")
+library("patchwork")
+library("harmony")
+library("ggplot2")
+library("SingleR")
+library("SingleCellExperiment")
+library("SignacX")
+library("EnhancedVolcano")
+library("clusterProfiler")
+library("enrichplot")
+library("org.Hs.eg.db")
+library("edgeR")
+library("ComplexHeatmap")
+library("circlize")
+library("CellChat")
+set.seed(42)
+```
+
+
+
+```
+
+#Import data
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+Ctrl1_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\Ctrl\\Ctrl1")
+Ctrl2_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\Ctrl\\Ctrl2")
+Ctrl3_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\Ctrl\\Ctrl3")
+Pat1_pre_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\patient\\pat1_pre")
+Pat2_pre_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\patient\\pat2_pre")
+Pat3_pre_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\patient\\pat3_pre")
+Pat1_post_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\patient\\pat1_post")
+Pat2_post_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\patient\\pat2_post")
+Pat3_post_data <- Read10X("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\patient\\pat3_post")
+
+Ctrl1 <- CreateSeuratObject(counts = Ctrl1_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Ctrl2 <- CreateSeuratObject(counts = Ctrl2_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Ctrl3 <- CreateSeuratObject(counts = Ctrl3_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Pat1_pre <- CreateSeuratObject(counts = Pat1_pre_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Pat2_pre <- CreateSeuratObject(counts = Pat2_pre_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Pat3_pre <- CreateSeuratObject(counts = Pat3_pre_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Pat1_post <- CreateSeuratObject(counts = Pat1_post_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Pat2_post <- CreateSeuratObject(counts = Pat2_post_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+Pat3_post <- CreateSeuratObject(counts = Pat3_post_data, project = "project_12thschool", min.cells = 3, min.features = 200)
+
+```
+##存東西
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+setwd("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\RDS") #設置儲存資料夾路徑
+getwd() #得知儲存資料夾路徑
+saveRDS(Ctrl1, file = "Ctrl1.rds") #儲存Seurat格式
+Ctrl1_1 <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/Ctrl1.rds") #讀檔案
+
+saveRDS(Ctrl1, file = "Ctrl1.rds")
+saveRDS(Ctrl2, file = "Ctrl2.rds")
+saveRDS(Ctrl3, file = "Ctrl3.rds")
+saveRDS(Pat1_pre, file = "Pat1_pre.rds")
+saveRDS(Pat2_pre, file = "Pat2_pre.rds")
+saveRDS(Pat3_pre, file = "Pat3_pre.rds")
+saveRDS(Pat1_post, file = "Pat1_post.rds")
+saveRDS(Pat2_post, file = "Pat2_post.rds")
+saveRDS(Pat3_post, file = "Pat3_post.rds")
+saveRDS(public_data_all, file = "public_data_all.rds")
+
+Ctrl1 <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Ctrl1.rds")
+Ctrl2 <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Ctrl2.rds")
+Ctrl3 <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Ctrl3.rds")
+Pat1_pre <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Pat1_pre.rds")
+Pat2_pre <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Pat2_pre.rds")
+Pat3_pre <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Pat3_pre.rds")
+Pat1_post <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Pat1_post.rds")
+Pat2_post <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Pat2_post.rds")
+Pat3_post <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Pat3_post.rds")
+public_data_all <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/public_data_all.rds")
+```
+
+#QC
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+Ctrl1[["percent.mt"]] <- PercentageFeatureSet(Ctrl1, pattern = "^MT-")
+Ctrl2[["percent.mt"]] <- PercentageFeatureSet(Ctrl2, pattern = "^MT-")
+Ctrl3[["percent.mt"]] <- PercentageFeatureSet(Ctrl3, pattern = "^MT-")
+Pat1_pre[["percent.mt"]] <- PercentageFeatureSet(Pat1_pre, pattern = "^MT-")
+Pat2_pre[["percent.mt"]] <- PercentageFeatureSet(Pat2_pre, pattern = "^MT-")
+Pat3_pre[["percent.mt"]] <- PercentageFeatureSet(Pat3_pre, pattern = "^MT-")
+Pat1_post[["percent.mt"]] <- PercentageFeatureSet(Pat1_post, pattern = "^MT-")
+Pat2_post[["percent.mt"]] <- PercentageFeatureSet(Pat2_post, pattern = "^MT-")
+Pat3_post[["percent.mt"]] <- PercentageFeatureSet(Pat3_post, pattern = "^MT-")
+
+VlnPlot(Ctrl1, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Ctrl2, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Ctrl3, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Pat1_pre, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Pat2_pre, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Pat3_pre, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Pat1_post, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Pat2_post, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(Pat3_post, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+
+```
+
+
+#Visulization nCountRNA
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+Ctrl1@meta.data %>% 
+  ggplot(aes(color=Ctrl1$orig.ident, x=Ctrl1$nCount_RNA, fill= Ctrl1$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 900)
+  
+Ctrl2@meta.data %>% 
+  ggplot(aes(color=Ctrl2$orig.ident, x=Ctrl2$nCount_RNA, fill= Ctrl2$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 900)
+
+Ctrl3@meta.data %>% 
+  ggplot(aes(color=Ctrl3$orig.ident, x=Ctrl3$nCount_RNA, fill= Ctrl3$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+
+Pat1_pre@meta.data %>% 
+  ggplot(aes(color=Pat1_pre$orig.ident, x=Pat1_pre$nCount_RNA, fill= Pat1_pre$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 400)
+  
+Pat2_pre@meta.data %>% 
+  ggplot(aes(color=Pat2_pre$orig.ident, x=Pat2_pre$nCount_RNA, fill= Pat2_pre$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 1000)
+  
+Pat3_pre@meta.data %>% 
+  ggplot(aes(color=Pat3_pre$orig.ident, x=Pat3_pre$nCount_RNA, fill= Pat3_pre$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 500)
+  
+Pat1_post@meta.data %>% 
+  ggplot(aes(color=Pat1_post$orig.ident, x=Pat1_post$nCount_RNA, fill= Pat1_post$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 1100)
+
+Pat2_post@meta.data %>% 
+  ggplot(aes(color=Pat2_post$orig.ident, x=Pat2_post$nCount_RNA, fill= Pat2_post$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 950)
+
+Pat3_post@meta.data %>% 
+  ggplot(aes(color=Pat3_post$orig.ident, x=Pat3_post$nCount_RNA, fill= Pat3_post$orig.ident)) + 
+  geom_density(alpha = 0.2) + 
+  scale_x_log10() + 
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = 1800)
+
+```
+
+#Visulization nFeatureRNA
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+
+Ctrl1@meta.data %>%
+  ggplot(aes(color = Ctrl1$orig.ident, x = Ctrl1$nFeature_RNA, fill = Ctrl1$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(600, 3500))
+  
+Ctrl2@meta.data %>%
+  ggplot(aes(color = Ctrl2$orig.ident, x = Ctrl2$nFeature_RNA, fill = Ctrl2$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(600, 3000))
+
+Ctrl3@meta.data %>%
+  ggplot(aes(color = Ctrl3$orig.ident, x = Ctrl3$nFeature_RNA, fill = Ctrl3$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(330, 2800))
+
+Pat1_pre@meta.data %>%
+  ggplot(aes(color = Pat1_pre$orig.ident, x = Pat1_pre$nFeature_RNA, fill = Pat1_pre$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(330, 3100))
+
+Pat2_pre@meta.data %>%
+  ggplot(aes(color = Pat2_pre$orig.ident, x = Pat2_pre$nFeature_RNA, fill = Pat2_pre$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(700, 3500))
+  
+Pat3_pre@meta.data %>%
+  ggplot(aes(color = Pat3_pre$orig.ident, x = Pat3_pre$nFeature_RNA, fill = Pat3_pre$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(350, 2400))
+
+Pat1_post@meta.data %>%
+  ggplot(aes(color = Pat1_post$orig.ident, x = Pat1_post$nFeature_RNA, fill = Pat1_post$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(600, 3600))
+
+
+Pat2_post@meta.data %>%
+  ggplot(aes(color = Pat2_post$orig.ident, x = Pat2_post$nFeature_RNA, fill = Pat2_post$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(650, 3600))
+  
+Pat3_post@meta.data %>%
+  ggplot(aes(color = Pat3_post$orig.ident, x = Pat3_post$nFeature_RNA, fill = Pat3_post$orig.ident)) +
+  geom_density(alpha = 0.2) +
+  scale_x_log10() +
+  theme_classic() +
+  ylab("Cell density") +
+  geom_vline(xintercept = c(1000, 3800))
+```
+
+
+#Filtered
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+Ctrl1 <- subset(Ctrl1, subset = nCount_RNA >= 900 & nFeature_RNA >= 600 & nFeature_RNA <= 3500 & percent.mt < 20)
+Ctrl2 <- subset(Ctrl2, subset = nCount_RNA >= 900 & nFeature_RNA >= 600 & nFeature_RNA <= 3000 & percent.mt < 20)
+Ctrl3 <- subset(Ctrl3, subset = nCount_RNA >= 500 & nFeature_RNA >= 280 & nFeature_RNA <= 3300 & percent.mt < 20)
+Pat1_pre <- subset(Pat1_pre, subset = nCount_RNA >= 400 & nFeature_RNA >= 300 & nFeature_RNA <= 3100 & percent.mt < 20)
+Pat2_pre <- subset(Pat2_pre, subset = nCount_RNA >= 950 & nFeature_RNA >= 700 & nFeature_RNA <= 3500 & percent.mt < 20)
+Pat3_pre <- subset(Pat3_pre, subset = nCount_RNA >= 500 & nFeature_RNA >= 350 & nFeature_RNA <= 2400 & percent.mt < 20)
+Pat1_post <- subset(Pat1_post, subset = nCount_RNA >= 1100 & nFeature_RNA >= 600 & nFeature_RNA <= 3600 & percent.mt < 20)
+Pat2_post <- subset(Pat2_post, subset = nCount_RNA >= 950 & nFeature_RNA >= 650 & nFeature_RNA <= 3600 & percent.mt < 20)
+Pat3_post <- subset(Pat3_post, subset = nCount_RNA >= 1800 & nFeature_RNA >= 1000 & nFeature_RNA <= 3800 & percent.mt < 20)
+
+
+Ctrl1 <- AddMetaData(Ctrl1, metadata = "Heathy_control", col.name = "Condition")
+Ctrl2 <- AddMetaData(Ctrl2, metadata = "Heathy_control", col.name = "Condition")
+Ctrl3 <- AddMetaData(Ctrl3, metadata = "Heathy_control", col.name = "Condition")
+Pat1_pre <- AddMetaData(Pat1_pre, metadata = "Patient_pre_treatment", col.name = "Condition")
+Pat2_pre <- AddMetaData(Pat2_pre, metadata = "Patient_pre_treatment", col.name = "Condition")
+Pat3_pre <- AddMetaData(Pat3_pre, metadata = "Patient_pre_treatment", col.name = "Condition")
+Pat1_post <- AddMetaData(Pat1_post, metadata = "Patient_post_treatment", col.name = "Condition")
+Pat2_post <- AddMetaData(Pat2_post, metadata = "Patient_post_treatment", col.name = "Condition")
+Pat3_post <- AddMetaData(Pat3_post, metadata = "Patient_post_treatment", col.name = "Condition")
+
+```
+
+
+#merge 單純合併
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+public_data_1 <- merge(Ctrl1, Ctrl2)
+public_data_2 <- merge(public_data_1, Ctrl3)
+public_data_3 <- merge(public_data_2, Pat1_pre)
+public_data_4 <- merge(public_data_3, Pat2_pre)
+public_data_5 <- merge(public_data_4, Pat3_pre)
+public_data_6 <- merge(public_data_5, Pat1_post)
+public_data_7 <- merge(public_data_6, Pat2_post)
+public_data_all <- merge(public_data_7, Pat3_post)
+merge(x=d1, y=list(d2, d3, d4)) #合併多個檔案
+DefaultAssay(public_data_all) <- "RNA"
+
+
+```
+
+#integrated 耗CPU
+```{r, warning=FALSE, eval=FALSE}
+cell.list <- list(NC1, GDM1)
+
+for (i in 1:length(cell.list)) {
+  cell.list[[i]] <- NormalizeData(cell.list[[i]], verbose = FALSE)
+  cell.list[[i]] <- FindVariableFeatures(
+    cell.list[[i]], 
+    selection.method = "vst", 
+    nfeatures = 2000, 
+    verbose = FALSE
+  )
+}
+
+features <- SelectIntegrationFeatures(object.list = cell.list)
+
+cell.list.anchors <- FindIntegrationAnchors(
+  object.list = cell.list,
+  anchor.features = features,
+  dims = 1:20
+)
+
+publicdata <- IntegrateData(
+  anchorset = cell.list.anchors,
+  dims = 1:20
+)
+DefaultAssay(publicdata) <- "RNA"
+```
+
+
+
+### data process
+
+#### normalize data
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+DefaultAssay(public_data_all) <- "RNA"
+public_data_all <- NormalizeData(public_data_all)
+```
+
+####find variable feature
+
+```{r, warning=FALSE, eval=FALSE}
+public_data_all <- FindVariableFeatures(public_data_all, selection.method = "vst", nfeatures = 2000)
+VariableFeaturePlot(public_data_all)
+```
+
+####scale data
+
+```{r, warning=FALSE, eval=FALSE}
+public_data_all <- ScaleData(public_data_all, features = VariableFeatures(object = public_data_all))
+```
+-----3/13做到這
+
+####RunPCA
+
+```{r, warning=FALSE, eval=FALSE}
+public_data_all <- RunPCA(public_data_all, features = VariableFeatures(object = public_data_all))
+ElbowPlot(public_data_all, ndims = 50) #取彎點以前的一個值
+VizDimLoadings(public_data_all, dims = 1:9, nfeatures = 15)
+```
+
+####harmony 
+
+merge data --> harmony: Batch effect correction.
+
+```{r, warning=FALSE, eval=FALSE}
+BiocManager::install("harmony")
+library(harmony)
+public_data_all <- harmony::RunHarmony(public_data_all,
+                            group.by.vars = 'Condition',
+                            reduction.save = 'harmony')
+```
+
+umap after harmony
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+public_data_all <- RunUMAP(public_data_all,
+                 dims = 1:9,  #取到的彎點
+                 reduction = "harmony",
+                 reduction.name = 'harmonyumap')
+DimPlot(public_data_all, group.by = 'Condition',reduction = 'harmonyumap') + labs(title = "UMAP")
+```
+---3/14進度
+tSNE after harmony 耗時耗CPU
+
+```{r, warning=FALSE, eval=FALSE}
+public_data_all <- RunTSNE(public_data_all,
+                 dims = 1:9,
+                 reduction = "harmony",
+                 reduction.name = "harmonytsne")
+DimPlot(public_data_all, group.by = "Condition", reduction = "harmonytsne") + labs(title = "tSNE")
+```
+
+
+### cluster analysis
+
+```{r, warning=FALSE, eval=FALSE}
+names(public_data_all@reductions)
+public_data_all <- FindNeighbors(public_data_all, reduction = "harmony", dims = 1:9) 
+names(public_data_all@graphs)
+public_data_all <- FindClusters(public_data_all, resolution = 0.1)
+DimPlot(public_data_all, group.by = 'RNA_snn_res.0.1', reduction = 'harmonyumap', label = TRUE) + labs(title = "clustering")
+
+```
+
+---3/15
+
+
+singleR
+
+```{r, eval=FALSE}
+ref <- celldex::DatabaseImmuneCellExpressionData()
+
+results <- SingleR(test = as.SingleCellExperiment(public_data_all),
+                   ref = ref, labels = ref$label.main)
+
+results_fine <- SingleR(test = as.SingleCellExperiment(public_data_all),
+                        ref = ref ,labels = ref$label.fine)
+
+public_data_all$singleR_labels_m <- results$labels
+public_data_all$singler_labels_fine <- results_fine$labels
+
+DimPlot(public_data_all, reduction = 'harmonyumap', group.by = 'singleR_labels_m')
+DimPlot(public_data_all, reduction = 'harmonyumap', group.by = 'singler_labels_fine')
+
+table(public_data_all@meta.data$singleR_labels_m)
+```
+
+
+---3/16
+
+
+### DEGs(differentially expressed genes) analysis
+#DEG pre/post/HC
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+levels(public_data_all)
+Idents(public_data_all) <- 'Condition'
+DEG_patpre_HC <- FindMarkers(public_data_all, 
+                   ident.1 = 'Patient_pre_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+                   
+DEG_patpre_HC$gene <- rownames(DEG_patpre_HC)
+DEG_patpre_HC$significance <- DEG_patpre_HC$p_val_adj < 0.05 & abs(DEG_patpre_HC$avg_log2FC) > 0.5
+DEG_patpre_HC <- DEG_patpre_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_patpre_HC, file = "DEG_patpre_HC.rds")
+DEG_patpre_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_patpre_HC.rds")
+                   
+DEG_patpost_HC <- FindMarkers(public_data_all, 
+                   ident.1 = 'Patient_post_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+                   
+DEG_patpost_HC$gene <- rownames(DEG_patpost_HC)
+DEG_patpost_HC$significance <- DEG_patpost_HC$p_val_adj < 0.05 & abs(DEG_patpost_HC$avg_log2FC) > 0.5
+DEG_patpost_HC <- DEG_patpost_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_patpost_HC, file = "DEG_patpost_HC.rds")
+DEG_patpost_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_patpost_HC.rds")
+
+DEG_patpre_patpost <- FindMarkers(public_data_all, 
+                   ident.1 = 'Patient_pre_treatment',
+                   ident.2 = 'Patient_post_treatment',
+                   logfc.threshold = 0.25)
+                   
+DEG_patpre_patpost$gene <- rownames(DEG_patpre_patpost)
+DEG_patpre_patpost$significance <- DEG_patpre_patpost$p_val_adj < 0.05 & abs(DEG_patpre_patpost$avg_log2FC) > 0.5
+DEG_patpre_patpost <- DEG_patpre_patpost %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_patpre_patpost, file = "DEG_patpre_patpost.rds")
+DEG_patpre_patpost <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_patpre_patpost.rds")
+
+setwd("C:\\Users\\User\\OneDrive\\Desktop\\交大專題\\實作\\RDS") #設置儲存資料夾路徑
+getwd() #得知儲存資料夾路徑
+
+```
+```
+volcano plot
+
+```{r, warning=FALSE, message=FALSE, fig.width=15, fig.height=12, eval=FALSE}
+library(EnhancedVolcano)
+EnhancedVolcano(DEG_patpre_HC,
+                lab = rownames(DEG_patpre_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_patpost_HC,
+                lab = rownames(DEG_patpost_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_patpre_patpost,
+                lab = rownames(DEG_patpre_patpost),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+```
+
+```
+
+#DEG cells
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+
+levels(public_data_all)      
+Idents(public_data_all) <- 'singleR_labels_m'
+
+B_cells <- subset(public_data_all, idents = 'B cells')
+T_cells_CD4 <- subset(public_data_all, idents = 'T cells, CD4+')
+T_cells_CD8 <- subset(public_data_all, idents = 'T cells, CD8+')
+Monocytes <- subset(public_data_all, idents = 'Monocytes')
+NK_cells <- subset(public_data_all, idents = 'NK cells')
+
+
+
+saveRDS(B_cells, file = "B_cells.rds")
+saveRDS(T_cells_CD4, file = "T_cells_CD4.rds")
+saveRDS(T_cells_CD8, file = "T_cells_CD8.rds")
+saveRDS(Monocytes, file = "Monocytes.rds")
+saveRDS(NK_cells, file = "NK_cells.rds")
+
+B_cells <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/B_cells.rds")
+T_cells_CD4 <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/T_cells_CD4.rds")
+T_cells_CD8 <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/T_cells_CD8.rds")
+Monocytes <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/Monocytes.rds")
+NK_cells <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/NK_cells.rds")
+
+
+
+
+Idents(T_cells_CD4) <- 'Condition'
+levels(T_cells_CD4)
+DEG_T4_pre_HC <- FindMarkers(T_cells_CD4, 
+                   ident.1 = 'Patient_pre_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+DEG_T4_pre_HC$gene <- rownames(DEG_T4_pre_HC)
+DEG_T4_pre_HC$significance <- DEG_T4_pre_HC$p_val_adj < 0.05 & abs(DEG_T4_pre_HC$avg_log2FC) > 0.5
+DEG_T4_pre_HC <- DEG_T4_pre_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_T4_pre_HC, file = "DEG_T4_pre_HC.rds")
+DEG_T4_pre_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_T4_pre_HC.rds")
+
+DEG_T4_post_HC <- FindMarkers(T_cells_CD4, 
+                   ident.1 = 'Patient_post_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+DEG_T4_post_HC$gene <- rownames(DEG_T4_post_HC)
+DEG_T4_post_HC$significance <- DEG_T4_post_HC$p_val_adj < 0.05 & abs(DEG_T4_post_HC$avg_log2FC) > 0.5
+DEG_T4_post_HC <- DEG_T4_post_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_T4_post_HC, file = "DEG_T4_post_HC.rds")
+DEG_T4_post_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_T4_post_HC.rds")
+
+DEG_T4_post_pre <- FindMarkers(T_cells_CD4, 
+                   ident.1 = 'Patient_post_treatment',
+                   ident.2 = 'Patient_pre_treatment',
+                   logfc.threshold = 0.25)
+DEG_T4_post_pre$gene <- rownames(DEG_T4_post_pre)
+DEG_T4_post_pre$significance <- DEG_T4_post_pre$p_val_adj < 0.05 & abs(DEG_T4_post_pre$avg_log2FC) > 0.5
+DEG_T4_post_pre <- DEG_T4_post_pre %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_T4_post_pre, file = "DEG_T4_post_pre")
+DEG_T4_post_pre <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_T4_post_pre.rds")
+
+Idents(B_cells) <- 'Condition'
+levels(B_cells)
+DEG_B_pre_HC <- FindMarkers(B_cells, 
+                   ident.1 = 'Patient_pre_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+DEG_B_pre_HC$gene <- rownames(DEG_B_pre_HC)
+DEG_B_pre_HC$significance <- DEG_B_pre_HC$p_val_adj < 0.05 & abs(DEG_B_pre_HC$avg_log2FC) > 0.5
+DEG_B_pre_HC <- DEG_B_pre_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_B_pre_HC, file = "DEG_B_pre_HC.rds")
+DEG_patpost_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_B_pre_HC.rds")
+
+DEG_B_post_HC <- FindMarkers(B_cells, 
+                   ident.1 = 'Patient_post_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+DEG_B_post_HC$gene <- rownames(DEG_B_post_HC)
+DEG_B_post_HC$significance <- DEG_B_post_HC$p_val_adj < 0.05 & abs(DEG_B_post_HC$avg_log2FC) > 0.5
+DEG_B_post_HC <- DEG_B_post_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_B_post_HC, file = "DEG_B_post_HC.rds")
+DEG_B_post_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DDEG_B_post_HC.rds")
+
+Idents(Monocytes) <- 'Condition'
+levels(Monocytes)
+DEG_Mono_pre_HC <- FindMarkers(Monocytes, 
+                   ident.1 = 'Patient_pre_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+DEG_Mono_pre_HC$gene <- rownames(DEG_Mono_pre_HC)
+DEG_Mono_pre_HC$significance <- DEG_Mono_pre_HC$p_val_adj < 0.05 & abs(DEG_Mono_pre_HC$avg_log2FC) > 0.5
+DEG_Mono_pre_HC <- DEG_Mono_pre_HC %>% filter(p_val_adj < 0.05)
+DEG_Mono_pre_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_Mono_pre_HC.rds")
+
+DEG_Mono_post_HC <- FindMarkers(Monocytes, 
+                   ident.1 = 'Patient_post_treatment',
+                   ident.2 = 'Heathy_control',
+                   logfc.threshold = 0.25)
+DEG_Mono_post_HC$gene <- rownames(DEG_Mono_post_HC)
+DEG_Mono_post_HC$significance <- DEG_Mono_post_HC$p_val_adj < 0.05 & abs(DEG_Mono_post_HC$avg_log2FC) > 0.5
+DEG_Mono_post_HC <- DEG_Mono_post_HC %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_Mono_post_HC, file = "DEG_Mono_post_HC.rds")
+DEG_Mono_post_HC <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_Mono_post_HC.rds")
+
+DEG_Mono_post_pre <- FindMarkers(Monocytes, 
+                   ident.1 = 'Patient_post_treatment',
+                   ident.2 = 'Patient_pre_treatment',
+                   logfc.threshold = 0.25)
+DEG_Mono_post_pre$gene <- rownames(DEG_Mono_post_pre)
+DEG_Mono_post_pre$significance <- DEG_Mono_post_pre$p_val_adj < 0.05 & abs(DEG_Mono_post_pre$avg_log2FC) > 0.5
+DEG_Mono_post_pre <- DEG_Mono_post_pre %>% filter(p_val_adj < 0.05)
+saveRDS(DEG_Mono_post_pre, file = "DEG_Mono_post_pre.rds")
+DEG_Mono_post_pre <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/DEG_Mono_post_pre.rds")
+
+```
+
+#volcano plot
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+library(EnhancedVolcano)
+EnhancedVolcano(DEG_B_pre_HC,
+                lab = rownames(DEG_B_pre_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_B_post_HC,
+                lab = rownames(DEG_B_post_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_T4_pre_HC,
+                lab = rownames(DEG_T4_pre_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_T4_post_HC,
+                lab = rownames(DEG_T4_post_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_Mono_pre_HC,
+                lab = rownames(DEG_Mono_pre_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_Mono_post_HC,
+                lab = rownames(DEG_Mono_post_HC),
+                x = "avg_log2FC",
+                y = "p_val_adj")
+EnhancedVolcano(DEG_Mono_post_pre,
+                lab = rownames(DEG_Mono_post_pre),
+                x = "avg_log2FC",
+                y = "p_val_adj")                
+
+```
+
+
+#ego 有做篩選
+#GO不能有篩選
+
+
+#clusterProfiler Monocyte
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+#clusterProfiler Monocyte
+saveRDS(gsea_Mono_pre_HC_BP, file = "gsea_Mono_pre_HC_BP.rds")
+gsea_Mono_pre_HC_BP <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/gsea_Mono_pre_HC_BP.rds")
+saveRDS(gsea_Mono_post_HC_BP, file = "gsea_Mono_post_HC_BP.rds")
+gsea_Mono_post_HC_BP <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/gsea_Mono_post_HC_BP.rds")
+saveRDS(gsea_Mono_post_pre_BP, file = "gsea_Mono_post_pre_BP.rds")
+gsea_Mono_post_pre_BP <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/gsea_Mono_post_pre_BP.rds")
+
+#Gene list (Dataframe)
+Mono_pre_HC <- DEG_Mono_pre_HC %>%
+  dplyr::filter(!is.na(avg_log2FC)) %>%
+  dplyr::arrange(desc(avg_log2FC)) %>%
+  dplyr::select(gene, avg_log2FC)
+
+#Convert to GSEA input datatype(vector)
+Mono_pre_HC_geneList <- Mono_pre_HC$avg_log2FC
+names(Mono_pre_HC_geneList) <- Mono_pre_HC$gene
+Mono_pre_HC_geneList <- sort(Mono_pre_HC_geneList, decreasing = TRUE)
+
+
+gsea_Mono_pre_HC_BP <- gseGO(
+  geneList     = Mono_pre_HC_geneList,
+  OrgDb        = org.Hs.eg.db,
+  keyType      = "SYMBOL",
+  ont          = "BP",
+  minGSSize    = 10,
+  maxGSSize    = 500,
+  pvalueCutoff = 0.05,
+  verbose      = FALSE
+)
+
+Mono_pre_HC_BP <- gsea_Mono_pre_HC_BP@result
+write.csv(Mono_pre_HC_BP, file = "Mono_pre_HC_BP.csv", row.names = FALSE)
+
+dotplot(gsea_Mono_pre_HC_BP, showCategory=10, split=".sign") + facet_grid(.~.sign)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0060337",
+  title = "GO:0060337 type I interferon-mediated signaling pathway"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0071357",
+  title = "GO:0071357 cellular response to type I interferon"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0001906",
+  title = "GO:0001906 cell killing"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0002474",
+  title = "GO:0002474 antigen processing and presentation of peptide antigen via MHC class I"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0035455",
+  title = "GO:0035455 response to interferon-alpha"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0035456",
+  title = "GO:0035456 response to interferon-beta"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0002434",
+  title = "GO:0002434 immune complex clearance"
+)
+
+gseaplot2(
+  gsea_Mono_pre_HC_BP,
+  geneSetID = "GO:0043277",
+  title = "GO:0043277 apoptotic cell clearance"
+)
+
+#Gene list (Dataframe)
+Mono_post_HC <- DEG_Mono_post_HC %>%
+  dplyr::filter(!is.na(avg_log2FC)) %>%
+  dplyr::arrange(desc(avg_log2FC)) %>%
+  dplyr::select(gene, avg_log2FC)
+
+#Convert to GSEA input datatype(vector)
+Mono_post_HC_geneList <- Mono_post_HC$avg_log2FC
+names(Mono_post_HC_geneList) <- Mono_post_HC$gene
+Mono_post_HC_geneList <- sort(Mono_post_HC_geneList, decreasing = TRUE)
+
+
+gsea_Mono_post_HC_BP <- gseGO(
+  geneList     = Mono_post_HC_geneList,
+  OrgDb        = org.Hs.eg.db,
+  keyType      = "SYMBOL",
+  ont          = "BP",
+  minGSSize    = 10,
+  maxGSSize    = 500,
+  pvalueCutoff = 0.05,
+  verbose      = FALSE
+)
+
+Mono_post_HC_BP <- gsea_Mono_post_HC_BP@result
+write.csv(Mono_post_HC_BP, file = "Mono_post_HC_BP.csv", row.names = FALSE)
+
+dotplot(gsea_Mono_post_HC_BP, showCategory=10, split=".sign") + facet_grid(.~.sign)
+
+gseaplot2(
+  gsea_Mono_post_HC_BP,
+  geneSetID = "GO:0002474",
+  title = "GO:0002474 antigen processing and presentation of peptide antigen via MHC class I"
+)
+
+gseaplot2(
+  gsea_Mono_post_HC_BP,
+  geneSetID = "GO:0015986",
+  title = "GO:0015986 proton motive force-driven ATP synthesis"
+)
+
+gseaplot2(
+  gsea_Mono_post_HC_BP,
+  geneSetID = "GO:0035455",
+  title = "GO:0035455 response to interferon-alpha"
+)
+
+gseaplot2(
+  gsea_Mono_post_HC_BP,
+  geneSetID = "GO:0002434",
+  title = "GO:0002434 immune complex clearance"
+)
+
+gseaplot2(
+  gsea_Mono_post_HC_BP,
+  geneSetID = "GO:0043277",
+  title = "GO:0043277 apoptotic cell clearance"
+)
+
+#Gene list (Dataframe)
+Mono_post_pre <- DEG_Mono_post_pre %>%
+  dplyr::filter(!is.na(avg_log2FC)) %>%
+  dplyr::arrange(desc(avg_log2FC)) %>%
+  dplyr::select(gene, avg_log2FC)
+
+#Convert to GSEA input datatype(vector)
+Mono_post_pre_geneList <- Mono_post_pre$avg_log2FC
+names(Mono_post_pre_geneList) <- Mono_post_pre$gene
+Mono_post_pre_geneList <- sort(Mono_post_pre_geneList, decreasing = TRUE)
+
+
+gsea_Mono_post_pre_BP <- gseGO(
+  geneList     = Mono_post_pre_geneList,
+  OrgDb        = org.Hs.eg.db,
+  keyType      = "SYMBOL",
+  ont          = "BP",
+  minGSSize    = 10,
+  maxGSSize    = 500,
+  pvalueCutoff = 0.05,
+  verbose      = FALSE
+)
+
+Mono_post_pre_BP <- gsea_Mono_post_pre_BP@result
+write.csv(Mono_post_pre_BP, file = "Mono_post_pre_BP.csv", row.names = FALSE)
+
+dotplot(gsea_Mono_post_pre_BP, showCategory=10, split=".sign") + facet_grid(.~.sign)
+
+gseaplot2(
+  gsea_Mono_post_pre_BP,
+  geneSetID = "GO:0002399",
+  title = "GO:0002399 MHC class II protein complex assembly"
+)
+gseaplot2(
+  gsea_Mono_post_pre_BP,
+  geneSetID = "GO:0002495",
+  title = "GO:0002495 antigen processing and presentation of peptide antigen via MHC class II"
+)
+gseaplot2(
+  gsea_Mono_post_pre_BP,
+  geneSetID = "GO:0031640",
+  title = "GO:0031640 killing of cells of another organism"
+)
+
+gseaplot2(
+  gsea_Mono_post_pre_BP,
+  geneSetID = "GO:0019724",
+  title = "GO:0019724 B cell mediated immunity"
+)
+gseaplot2(
+  gsea_Mono_post_pre_BP,
+  geneSetID = "GO:0060337",
+  title = "GO:0060337 type I interferon-mediated signaling pathway"
+)
+gseaplot2(
+  gsea_Mono_post_pre_BP,
+  geneSetID = "GO:0071357",
+  title = "GO:0071357 cellular response to type I interferon"
+)
+```
+
+
+
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+
+data.dir <- "./CellChat_analysis"
+if (!dir.exists(data.dir)) dir.create(data.dir)
+setwd(data.dir)
+#save load
+
+saveRDS(cellchat.list, file = "cellchat.list.rds")
+cellchat.list <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/CellChat_analysis/cellchat.list.rds")
+saveRDS(cellchat, file = "cellchat.rds")
+cellchat <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/CellChat_analysis/cellchat.rds")
+
+
+public_data_all <- readRDS("C:/Users/User/OneDrive/Desktop/交大專題/實作/RDS/public_data_all.rds")
+DefaultAssay(public_data_all) <- "RNA"
+
+# Only NormalizeData is needed for CellChat (uses log-normalized 'data' slot)
+# FindVariableFeatures and ScaleData are NOT required for CellChat
+public_data_all <- NormalizeData(public_data_all)
+
+# Split Seurat object based on the "Condition" metadata column
+seurat.list <- SplitObject(public_data_all, split.by = "Condition")
+```
+
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+# 3. Convert each Seurat object into a CellChat object and run the full single-dataset pipeline separately
+
+cellchat.list <- lapply(names(seurat.list), function(x) {
+  seurat_obj <- seurat.list[[x]]
+   
+  # Extract RNA log-normalized expression data
+data.input <- GetAssayData(seurat_obj, assay = "RNA", slot = "data")
+  
+  # Extract metadata (CellStates used for grouping)
+  meta <- seurat_obj@meta.data
+  
+  # Create CellChat object
+  cellchat <- createCellChat(object = data.input, meta = meta, group.by = "singleR_labels_m")
+  
+  # Assign CellChat database (human)
+  cellchat@DB <- CellChatDB.human
+  
+  # Subset genes and interactions supported by the database
+  cellchat <- subsetData(cellchat)
+  
+  # Identify overexpressed genes and ligand-receptor interactions
+  cellchat <- identifyOverExpressedGenes(cellchat)
+  cellchat <- identifyOverExpressedInteractions(cellchat)
+  
+  # Project data onto protein-protein interaction (PPI) network
+  cellchat <- projectData(cellchat, PPI.human)
+  
+  # ---- Compute cell-cell communication network ----
+  cellchat <- computeCommunProb(cellchat)                   # Compute communication probability
+  cellchat <- filterCommunication(cellchat, min.cells = 10) # Filter low-abundance interactions
+  cellchat <- computeCommunProbPathway(cellchat)            # Compute pathway-level probability
+  cellchat <- aggregateNet(cellchat)                        # Aggregate into @net and @netP
+  
+  # Compute network centrality measures (per condition)
+  cellchat <- netAnalysis_computeCentrality(cellchat)
+  
+  return(cellchat)
+})
+
+names(cellchat.list) <- names(seurat.list)
+
+# ======================================
+# 4. Merge all CellChat objects for comparative analysis
+# ======================================
+# Note: if reloading previously saved objects from an older CellChat version (<1.6.0),
+# run updateCellChat() on each object before merging, e.g.:
+# cellchat.list <- lapply(cellchat.list, updateCellChat)
+
+cellchat <- mergeCellChat(cellchat.list, add.names = names(cellchat.list))
+print(cellchat)  # Display merged CellChat object summary
+
+# ======================================
+# 5. Post-merge: joint manifold learning and network similarity
+#    These MUST be run on the merged object, not on individual objects
+# ======================================
+
+# Functional similarity
+cellchat <- computeNetSimilarityPairwise(cellchat, type = "functional")
+cellchat <- netEmbedding(cellchat, type = "functional")
+cellchat <- netClustering(cellchat, type = "functional")
+
+# Structural similarity
+cellchat <- computeNetSimilarityPairwise(cellchat, type = "structural")
+cellchat <- netEmbedding(cellchat, type = "structural")
+cellchat <- netClustering(cellchat, type = "structural")
+```
+
+#cellchatting
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+#total number of interactions and interaction strength
+interact_num <- compareInteractions(cellchat, show.legend = F, group = c(1,2,3))
+interact_str <- compareInteractions(cellchat, show.legend = F, group = c(1,2,3), measure = "weight")
+interact_num + interact_str
+#netVisual
+par(mfrow = c(1,2), xpd=TRUE)
+netVisual_diffInteraction(cellchat, weight.scale = T)
+netVisual_diffInteraction(cellchat, weight.scale = T, measure = "weight")
+#interact-heatmap
+heat_num <- netVisual_heatmap(cellchat)
+heat_str <- netVisual_heatmap(cellchat, measure = "weight")
+heat_num + heat_str
+#cellchatting
+weight.max <- getMaxWeight(cellchat.list, attribute = c("idents","count"))
+par(mfrow = c(1,3), xpd=TRUE)
+for (i in 1:length(cellchat.list)) {
+  netVisual_circle(cellchat.list[[i]]@net$count, weight.scale = T, label.edge= T, edge.weight.max = weight.max[2], edge.width.max = 12, title.name = paste0("Number of interactions - ", names(cellchat.list)[i]))
+}
+#gene enrich
+gene_enrich_HC_pre <- rankNet(cellchat, mode = "comparison", comparison = c(1, 2), stacked = F, do.stat = TRUE)
+gene_enrich_HC_post <- rankNet(cellchat, mode = "comparison", comparison = c(1, 3), stacked = F, do.stat = TRUE)
+gene_enrich_pre_post <- rankNet(cellchat, mode = "comparison", comparison = c(2, 3), stacked = F, do.stat = TRUE)
+gene_enrich_HC_pre + gene_enrich_HC_post+gene_enrich_pre_post
+
+i = 1
+#outgoing signal
+pathway.union <- union(cellchat.list[[i]]@netP$pathways, cellchat.list[[i]]@netP$pathways)
+outgoing_signal_HC = netAnalysis_signalingRole_heatmap(cellchat.list[[i]], pattern = "outgoing", signaling = pathway.union, title = names(cellchat.list)[i])
+outgoing_signal_pre = netAnalysis_signalingRole_heatmap(cellchat.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = names(cellchat.list)[i+1])
+outgoing_signal_post = netAnalysis_signalingRole_heatmap(cellchat.list[[i+2]], pattern = "outgoing", signaling = pathway.union, title = names(cellchat.list)[i+2])
+par(mfrow = c(1,3), xpd=TRUE)
+outgoing_signal_HC + outgoing_signal_pre + outgoing_signal_post
+#incoming signal
+incoming_signal_HC = netAnalysis_signalingRole_heatmap(cellchat.list[[i]], pattern = "incoming", signaling = pathway.union, title = names(cellchat.list)[i], color.heatmap = "GnBu")
+incoming_signal_pre = netAnalysis_signalingRole_heatmap(cellchat.list[[i+1]], pattern = "incoming", signaling = pathway.union, title = names(cellchat.list)[i+1],  color.heatmap = "GnBu")
+incoming_signal_post = netAnalysis_signalingRole_heatmap(cellchat.list[[i+2]], pattern = "incoming", signaling = pathway.union, title = names(cellchat.list)[i+2],  color.heatmap = "GnBu")
+par(mfrow = c(1,3))
+incoming_signal_HC + incoming_signal_pre + incoming_signal_post
+#overall signal
+overall_signal_HC = netAnalysis_signalingRole_heatmap(cellchat.list[[i]], pattern = "all", signaling = pathway.union, title = names(cellchat.list)[i], color.heatmap = "OrRd")
+overall_signal_pre = netAnalysis_signalingRole_heatmap(cellchat.list[[i+1]], pattern = "all", signaling = pathway.union, title = names(cellchat.list)[i+1], color.heatmap = "OrRd")
+overall_signal_post = netAnalysis_signalingRole_heatmap(cellchat.list[[i+2]], pattern = "all", signaling = pathway.union, title = names(cellchat.list)[i+2], color.heatmap = "OrRd")
+draw(overall_signal_HC + overall_signal_pre + overall_signal_post, ht_gap = unit(0.5, "cm"))
+#netVisual_bubble
+netVisual_bubble(cellchat, sources.use = 2, targets.use = c(1:5),  comparison = c(1, 2), angle.x = 45)
+netVisual_bubble(cellchat, sources.use = 2, targets.use = c(1:5),  comparison = c(1, 3), angle.x = 45)
+netVisual_bubble(cellchat, sources.use = 2, targets.use = c(1:5),  comparison = c(2, 3), angle.x = 45)
+# Chord diagram
+par(mfrow = c(1,2), xpd=TRUE)
+netVisual_chord_gene(cellchat.list[[1]], sources.use = 2, targets.use = c(1:5), slot.name = 'net', net = net.up, lab.cex = 0.8, small.gap = 3.5, title.name = paste0("Up-regulated signaling in ", names(cellchat.list)[1]))
+netVisual_chord_gene(cellchat.list[[1]], sources.use = 2, targets.use = c(1:5), slot.name = 'net', net = net.down, lab.cex = 0.8, small.gap = 3.5, title.name = paste0("Down-regulated signaling in ", names(cellchat.list)[1]))
+```
+
+```{r, warning=FALSE, message=FALSE}
+# define a positive dataset, i.e., the dataset with positive fold change against the other dataset
+pos.dataset = "Patient_pre_treatment"
+# define a char name used for storing the results of differential expression analysis
+features.name = pos.dataset
+# perform differential expression analysis
+cellchat <- identifyOverExpressedGenes(cellchat, group.dataset = "datasets", pos.dataset = pos.dataset, features.name = features.name, only.pos = FALSE, thresh.pc = 0.1, thresh.fc = 0.1, thresh.p = 1)
+#> Use the joint cell labels from the merged CellChat object
+# map the results of differential expression analysis onto the inferred cell-cell communications to easily manage/subset the ligand-receptor pairs of interest
+net <- netMappingDEG(cellchat, features.name = features.name)
+# extract the ligand-receptor pairs with upregulated ligands in LS
+net.up <- subsetCommunication(cellchat, net = net, datasets = "Patient_post_treatment",ligand.logFC = 0.2, receptor.logFC = NULL)
+# extract the ligand-receptor pairs with upregulated ligands and upregulated recetptors in NL, i.e.,downregulated in LS
+net.down <- subsetCommunication(cellchat, net = net, datasets = "Patient_post_treatment",ligand.logFC = -0.1, receptor.logFC = -0.1)
+gene.up <- extractGeneSubsetFromPair(net.up, cellchat)
+gene.down <- extractGeneSubsetFromPair(net.down, cellchat)
+
+pairLR.use.up = net.up[, "interaction_name", drop = F]
+up_regulate <- netVisual_bubble(cellchat, pairLR.use = pairLR.use.up, sources.use = 2, targets.use = c(1:5), comparison = c(2,3),  angle.x = 90, remove.isolate = T,title.name = paste0("Up-regulated signaling in ", names(cellchat.list)[3]))
+#> Comparing communications on a merged object
+pairLR.use.down = net.down[, "interaction_name", drop = F]
+down_regulate <- netVisual_bubble(cellchat, pairLR.use = pairLR.use.down, sources.use = 2, targets.use = c(1:5), comparison = c(2,3),  angle.x = 90, remove.isolate = T,title.name = paste0("Down-regulated signaling in ", names(cellchat.list)[3]))
+#> Comparing communications on a merged object
+up_regulate + down_regulate
+
+par(mfrow = c(1,2), xpd=TRUE)
+netVisual_chord_gene(cellchat.list[[3]], sources.use = 2, targets.use = c(1:5), , slot.name = 'net', net = net.up, title.name = paste0("Up-regulated signaling in ", names(cellchat.list)[3]))
+netVisual_chord_gene(cellchat.list[[3]], sources.use = 2, targets.use = c(1:5), , slot.name = 'net', net = net.down, title.name = paste0("Down-regulated signaling in ", names(cellchat.list)[3]))
+
+pathways.show <- c("CD4") 
+weight.max <- getMaxWeight(cellchat.list, slot.name = c("netP"), attribute = pathways.show) # control the edge weights across different datasets(找不到物件 'weight.all')
+par(mfrow = c(1,2), xpd=TRUE)
+for (i in 1:length(cellchat.list)) {
+  netVisual_aggregate(object.list[[i]], signaling = pathways.show, layout = "circle", edge.weight.max = weight.max[1], edge.width.max = 10, signaling.name = paste(pathways.show, names(cellchat.list)[i]))
+}
+
+```
+
+
+
+
+
